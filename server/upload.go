@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"sync"
 
 	"github.com/jmorganca/ollama/api"
 )
@@ -191,9 +192,13 @@ type ProgressWriter struct {
 	completed int
 	total     int
 	fn        func(api.ProgressResponse)
+	mu        sync.Mutex
 }
 
 func (pw *ProgressWriter) Write(b []byte) (int, error) {
+	pw.mu.Lock()
+	defer pw.mu.Unlock()
+
 	n := len(b)
 	pw.bucket += n
 	pw.completed += n
